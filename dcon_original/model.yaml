@@ -3,23 +3,8 @@ version: 1
 
 components:
     vote:
-        image: datagridsys/demo-vote:${vote_ver-latest}
+        image: opsani/demo-vote:${vote_ver-latest}
         replicas: ${vote_replicas-5}
-        lifecycle:
-            quality_probe:
-                steps:
-                    - call:
-                        label: "Verify new vote operation"
-                        action: call_builtin_plugin
-                        arguments:
-                            plugin_image: datagridsys/skopos:beta
-                            plugin_name: http
-                            plugin_action: get_ok
-                            plugin_timeout: ${plugin_timeout}
-                            selector: "{{.id}}"
-                            port: 80
-                            path: "/"
-                            timeout: ${plugin_check_timeout}
         provides:
             ports: [ "80" ]
         uses:
@@ -49,20 +34,10 @@ components:
                         plugin: docker
                         action: comp_signal
                         label: "Re-attach workers to redis"
-                        arguments:  { component: "worker", signal: "INT" }
-                    - call:
-                        label: "Verify new redis operation"
-                        action: call_plugin
-                        arguments:
-                            plugin_image: datagridsys/demo-plugin-redis
-                            plugin_action: check_ok
-                            plugin_timeout: ${plugin_timeout}
-                            selector: "{{.id}}"
-                            port: 6379
-                            timeout: ${plugin_check_timeout}
+                        arguments:  { target: "worker", signal: "INT" }
 
     worker:
-        image: datagridsys/demo-worker:2.0
+        image: opsani/demo-worker:2.0
         replicas: ${worker_replicas-3}
         uses:
             db: {}
@@ -85,22 +60,9 @@ components:
         visual:
             x: 750
             y: 375
-        lifecycle:
-            quality_probe:
-                steps:
-                    - call:
-                        label: "Verify new db operation"
-                        action: call_plugin
-                        arguments:
-                            plugin_image: datagridsys/demo-plugin-postgres
-                            plugin_action: check_ok
-                            plugin_timeout: ${plugin_timeout}
-                            selector: "{{.id}}"
-                            port: 5432
-                            timeout: ${plugin_check_timeout}
 
     result:
-        image: datagridsys/demo-result:${result_ver-latest}
+        image: opsani/demo-result:${result_ver-latest}
         singleton: true
         provides:
             ports: [ "80" ]
@@ -112,21 +74,6 @@ components:
         visual:
             x: 375
             y: 490
-        lifecycle:
-            quality_probe:
-                steps:
-                    - call:
-                        label: "Verify new result operation"
-                        action: call_builtin_plugin
-                        arguments:
-                            plugin_image: datagridsys/skopos:beta
-                            plugin_name: http
-                            plugin_action: get_ok
-                            plugin_timeout: ${plugin_timeout}
-                            selector: "{{.id}}"
-                            port: 80
-                            path: "/index.html"
-                            timeout: ${plugin_check_timeout}
 
     # begin canary component
     # end canary component
