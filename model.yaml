@@ -76,19 +76,6 @@ components:
             y: 490
 
     # begin canary component
-    c-result:
-        image: opsani/demo-result:canary
-        singleton: true
-        provides:
-            ports: [ "80" ]
-        uses:
-            db: {}
-        plugin:
-            ec2-ecs:
-                mem: 128
-        visual:
-            x: 375
-            y: 375
     # end canary component
 
 gateways:
@@ -113,13 +100,4 @@ gateways:
             y: 490
 
     # begin canary gateway
-    canary-gwy:
-        type: ${result_gwy_type-host_port}
-        exposes:
-            - port: "${c_result_port}/tcp"
-              target_port: "80"
-        target: [c-result]
-        visual:
-            x: 50
-            y: 375
     # end canary gateway
